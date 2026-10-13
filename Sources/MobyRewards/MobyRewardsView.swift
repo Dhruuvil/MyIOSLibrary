@@ -1801,7 +1801,7 @@ private class ActiveCardView: UIView {
         addSubview(container)
 
         NSLayoutConstraint.activate([
-            container.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            container.topAnchor.constraint(equalTo: topAnchor, constant: 11),
             container.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             container.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             container.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12)
@@ -1953,7 +1953,7 @@ private class ActiveCardView: UIView {
         }
 
         container.addArrangedSubview(topRow)
-        container.setCustomSpacing(10, after: topRow)
+        container.setCustomSpacing(6, after: topRow)
 
         // Unlocked Message with a native celebration icon.
         let messageRow = UIStackView()
@@ -1980,7 +1980,7 @@ private class ActiveCardView: UIView {
         messageRow.addArrangedSubview(celebrationIcon)
         messageRow.addArrangedSubview(messageLabel)
         container.addArrangedSubview(messageRow)
-        container.setCustomSpacing(10, after: messageRow)
+        container.setCustomSpacing(6, after: messageRow)
 
         // Offer Box — preserve the existing design and keep the content visible.
         let offerBox = UIView()
@@ -2021,7 +2021,7 @@ private class ActiveCardView: UIView {
         }
 
         offerBox.addSubview(offerStack)
-        let offerHeightConstraint = offerBox.heightAnchor.constraint(equalToConstant: 76)
+        let offerHeightConstraint = offerBox.heightAnchor.constraint(equalToConstant: 70)
         offerHeightConstraint.priority = UILayoutPriority(999)
 
         NSLayoutConstraint.activate([
