@@ -1801,7 +1801,7 @@ private class ActiveCardView: UIView {
         addSubview(container)
 
         NSLayoutConstraint.activate([
-            container.topAnchor.constraint(equalTo: topAnchor, constant: 11),
+            container.topAnchor.constraint(equalTo: topAnchor, constant: 14),
             container.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             container.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             container.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12)
@@ -1979,6 +1979,11 @@ private class ActiveCardView: UIView {
 
         messageRow.addArrangedSubview(celebrationIcon)
         messageRow.addArrangedSubview(messageLabel)
+        messageRow.setContentHuggingPriority(.required, for: .vertical)
+        messageRow.setContentCompressionResistancePriority(.required, for: .vertical)
+        NSLayoutConstraint.activate([
+            messageRow.heightAnchor.constraint(equalToConstant: 18)
+        ])
         container.addArrangedSubview(messageRow)
         container.setCustomSpacing(6, after: messageRow)
 
