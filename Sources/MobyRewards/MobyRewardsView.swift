@@ -92,6 +92,8 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
     private var storedFiUserId = ""
 
+    private var deviceUniqueId = 0
+
 
 
     // MARK: - Data Lists
@@ -522,7 +524,9 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
         gender: String,
 
-        age: Int
+        age: Int,
+
+        deviceUniqueId: Int = 0
 
     ) {
 
@@ -537,6 +541,8 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
         self.gender = gender
 
         self.age = age
+
+        self.deviceUniqueId = deviceUniqueId
 
         self.deviceId = "\(appShortName)-\(userUnique)"
 
@@ -721,6 +727,12 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
             }
 
         }
+
+
+
+        // Hide cards that were already scratched
+        let savedAdIds = loadSavedScratchedRewards().map { $0.adId }
+        upcomingRewards.removeAll { savedAdIds.contains($0.adId) }
 
 
 
@@ -911,7 +923,7 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
 
         // Merge locally scratched rewards that the API has not returned yet.
-        for reward in locallyScratchedRewards {
+        for reward in locallyScratchedRewards + loadSavedScratchedRewards() {
             if !activeRewards.contains(where: { $0.adId == reward.adId }) {
                 activeRewards.append(reward)
             }
@@ -1265,28 +1277,29 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
 
 
-       scratchView.onScratchComplete = { [weak self, weak scratchView] in
+        scratchView.onScratchComplete = { [weak self, weak scratchView] in
 
-    guard let self = self else { return }
+            guard let self = self else { return }
 
-    mutableReward.scratched = true
-    mutableReward.active = true
+            mutableReward.scratched = true
+            mutableReward.active = true
 
-    // Move the scratched reward from Upcoming to Active (local UI).
-    self.upcomingRewards.removeAll { $0.adId == mutableReward.adId }
-    if !self.activeRewards.contains(where: { $0.adId == mutableReward.adId }) {
-        self.activeRewards.append(mutableReward)
-    }
+            // Move the scratched reward from Upcoming to Active (local UI).
+            self.upcomingRewards.removeAll { $0.adId == mutableReward.adId }
+            if !self.activeRewards.contains(where: { $0.adId == mutableReward.adId }) {
+                self.activeRewards.append(mutableReward)
+            }
 
-    scratchView?.isHidden = true
-    self.collectionView.reloadData()
-    self.refreshDots()
-    self.applyTabsStyle()
+            scratchView?.isHidden = true
+            self.collectionView.reloadData()
+            self.refreshDots()
+            self.applyTabsStyle()
 
-    // Save the scratch on the server so it stays Active for this userUnique.
-    self.submitScratchedReward(mutableReward)
+            // Save the scratch on the server so it stays Active for this userUnique.
+            self.submitScratchedReward(mutableReward)
 
-}
+        }
+
 
 
         closeButton.addTarget(
@@ -1393,7 +1406,7 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
 
 
-     public func setFont(_ font: UIFont) {
+    public func setFont(_ font: UIFont) {
 
         theme.fontName = font.fontName
 
@@ -1401,11 +1414,35 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
     }
 
+    // MARK: - Local save (keeps card Active after app restart)
+    private var scratchedStorageKey: String {
+        return "moby_scratched_rewards"
+    }
+
+    private func loadSavedScratchedRewards() -> [Reward] {
+        guard let data = UserDefaults.standard.data(forKey: scratchedStorageKey),
+              let list = try? JSONDecoder().decode([Reward].self, from: data) else { return [] }
+        return list
+    }
+
+    private func saveScratchedRewardLocally(_ reward: Reward) {
+        var list = loadSavedScratchedRewards()
+        guard !list.contains(where: { $0.adId == reward.adId }) else { return }
+        list.append(reward)
+        if let data = try? JSONEncoder().encode(list) {
+            UserDefaults.standard.set(data, forKey: scratchedStorageKey)
+        }
+    }
+
     // MARK: - Save scratched reward on server
     private func submitScratchedReward(_ reward: Reward) {
+        // 1. Save in phone first
+        saveScratchedRewardLocally(reward)
+
+        // 2. Save on server
         MobyApi.directSubmitQuiz(
             adId: reward.adId,
-            deviceUniqueId: 0,
+            deviceUniqueId: deviceUniqueId,
             token: storedFsToken,
             userId: storedFiUserId,
             userContact: userUnique,

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Reward {
+public struct Reward: Codable {
     public var brand: String
     public var offer: String
     public var productName: String
