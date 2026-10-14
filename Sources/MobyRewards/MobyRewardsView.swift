@@ -360,7 +360,7 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
             collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
 
-            collectionView.heightAnchor.constraint(equalToConstant: 325),
+            collectionView.heightAnchor.constraint(equalToConstant: 296),
 
 
 
@@ -1043,7 +1043,7 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
         let width = collectionView.bounds.width - (theme.screenPaddingLeft + theme.screenPaddingRight)
 
-        return CGSize(width: max(width, 280), height: 315)
+        return CGSize(width: max(width, 280), height: 286)
 
     }
 
@@ -1259,7 +1259,7 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
             scratchView.bottomAnchor.constraint(equalTo: revealContainer.bottomAnchor),
 
-            scratchView.heightAnchor.constraint(equalToConstant: 315)
+            scratchView.heightAnchor.constraint(equalToConstant: 286)
 
         ])
 
@@ -2197,13 +2197,6 @@ bottomRow.addArrangedSubview(shopNowButton)
 bottomRow.setContentHuggingPriority(.required, for: .vertical)
 bottomRow.setContentCompressionResistancePriority(.required, for: .vertical)
 container.addArrangedSubview(bottomRow)
-
-// Flexible spacer: takes all the leftover height instead of the bottom row
-let flexibleSpacer = UIView()
-flexibleSpacer.translatesAutoresizingMaskIntoConstraints = false
-flexibleSpacer.setContentHuggingPriority(UILayoutPriority(1), for: .vertical)
-flexibleSpacer.setContentCompressionResistancePriority(UILayoutPriority(1), for: .vertical)
-container.addArrangedSubview(flexibleSpacer)
 
     }
 
