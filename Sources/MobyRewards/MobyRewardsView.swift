@@ -2116,7 +2116,7 @@ private class ActiveCardView: UIView {
 
             container.setCustomSpacing(12, after: offerBox)
             container.addArrangedSubview(couponBox)
-            container.setCustomSpacing(10, after: couponBox)
+            container.setCustomSpacing(12, after: couponBox)
         } else {
             container.setCustomSpacing(12, after: offerBox)
         }
@@ -2191,8 +2191,19 @@ private class ActiveCardView: UIView {
         shopNowButton.addTarget(self, action: #selector(shopNowTapped), for: .touchUpInside)
 
         bottomRow.addArrangedSubview(expiryStack)
-        bottomRow.addArrangedSubview(shopNowButton)
-        container.addArrangedSubview(bottomRow)
+bottomRow.addArrangedSubview(shopNowButton)
+
+// Keep the bottom row at its natural height so it never stretches
+bottomRow.setContentHuggingPriority(.required, for: .vertical)
+bottomRow.setContentCompressionResistancePriority(.required, for: .vertical)
+container.addArrangedSubview(bottomRow)
+
+// Flexible spacer: takes all the leftover height instead of the bottom row
+let flexibleSpacer = UIView()
+flexibleSpacer.translatesAutoresizingMaskIntoConstraints = false
+flexibleSpacer.setContentHuggingPriority(UILayoutPriority(1), for: .vertical)
+flexibleSpacer.setContentCompressionResistancePriority(UILayoutPriority(1), for: .vertical)
+container.addArrangedSubview(flexibleSpacer)
 
     }
 
