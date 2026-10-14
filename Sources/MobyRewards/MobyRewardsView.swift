@@ -1265,26 +1265,28 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
 
 
-        scratchView.onScratchComplete = { [weak self, weak scratchView] in
+       scratchView.onScratchComplete = { [weak self, weak scratchView] in
 
-            guard let self = self else { return }
+    guard let self = self else { return }
 
-            mutableReward.scratched = true
-            mutableReward.active = true
+    mutableReward.scratched = true
+    mutableReward.active = true
 
-            // Move the scratched reward from Upcoming to Active.
-            self.upcomingRewards.removeAll { $0.adId == mutableReward.adId }
-            if !self.activeRewards.contains(where: { $0.adId == mutableReward.adId }) {
-                self.activeRewards.append(mutableReward)
-            }
+    // Move the scratched reward from Upcoming to Active (local UI).
+    self.upcomingRewards.removeAll { $0.adId == mutableReward.adId }
+    if !self.activeRewards.contains(where: { $0.adId == mutableReward.adId }) {
+        self.activeRewards.append(mutableReward)
+    }
 
-            scratchView?.isHidden = true
-            self.collectionView.reloadData()
-            self.refreshDots()
-            self.applyTabsStyle()
+    scratchView?.isHidden = true
+    self.collectionView.reloadData()
+    self.refreshDots()
+    self.applyTabsStyle()
 
-        }
+    // Save the scratch on the server so it stays Active for this userUnique.
+    self.submitScratchedReward(mutableReward)
 
+}
 
 
         closeButton.addTarget(
@@ -1391,7 +1393,7 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
 
 
-    public func setFont(_ font: UIFont) {
+     public func setFont(_ font: UIFont) {
 
         theme.fontName = font.fontName
 
@@ -1399,6 +1401,41 @@ public class MobyRewardsView: UIView, UICollectionViewDelegate, UICollectionView
 
     }
 
+    // MARK: - Save scratched reward on server
+    private func submitScratchedReward(_ reward: Reward) {
+        MobyApi.directSubmitQuiz(
+            adId: reward.adId,
+            deviceUniqueId: 0,
+            token: storedFsToken,
+            userId: storedFiUserId,
+            userContact: userUnique,
+            deviceId: libraryDeviceId,
+            onSuccess: { [weak self] _ in
+                self?.loadActiveOffersSilently()
+            },
+            onError: { error in
+                print("directSubmitQuiz failed: \(error)")
+            }
+        )
+    }
+
+    private func loadActiveOffersSilently() {
+        MobyApi.getActiveOffers(
+            affiliateId: affiliateId,
+            appShortName: appShortName,
+            secureKey: secureKey,
+            userUnique: userUnique,
+            gender: gender,
+            age: age,
+            deviceId: libraryDeviceId,
+            onSuccess: { [weak self] response in
+                guard let self = self else { return }
+                self.setActiveOffers(response: response)
+                self.refreshDots()
+            },
+            onError: { _ in }
+        )
+    }
 
     @objc private func closeButtonTapped() {
         guard let window = self.window ??
